@@ -48,7 +48,7 @@ async function runAddPost(req, resp) {
       
       query = {name : 'Total Post'};
       await util.update(URI, DATABASE, COUNTER, query, {$set: {totalPost: totalPost + 1}});
-      resp.send('Stored to Mongodb OK'); // This is ugly, so change it to redirect
+      resp.redirect('/list'); // This is ugly, so change it to redirect
     } catch (e) {
       console.error(e);
     }
