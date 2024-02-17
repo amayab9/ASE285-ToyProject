@@ -27,6 +27,7 @@ describe("MongoDB Functions", () => {
     await mongod.stop();
   });
 
+  //create
   it("should create", async () => {
     const document = { professor: 'John Doe', department: 'Biology' };
     await util.create(connection, db.databaseName, collectionName, document);
@@ -36,20 +37,30 @@ describe("MongoDB Functions", () => {
 
 
   //read
+  it("should read documents", async () => {
+    const query = { professor: 'Professor X' };
+    const consoleLogMock = jest.spyOn(console, 'log').mockImplementation();
+    await util.read(connection, db.databaseName, collectionName, query);
+    expect(consoleLogMock).toHaveBeenCalledWith('Found 1 documents');
+    consoleLogMock.mockRestore();
+  });
 
+  //update
   it("should update", async () => {
-    // Define the query to find the document to update
     const query = { professor: 'Samuel Cho' };
-
-    // Define the update operation
     const update = { $set: { department: 'Software Engineering' } };
-
-    // Call the update function
     await util.update(connection, db.databaseName, collectionName, query, update);
-
-    // Verify if the document has been updated
     const updatedDocument = await db.collection(collectionName).findOne(query);
     expect(updatedDocument.department).toEqual('Software Engineering');
+  });
+
+  //readJSON
+  it("should readJSON", () => {
+    const readFileSyncMock = jest.spyOn(fs, 'readFileSync').mockReturnValue('{"name": "John", "age": 30}');
+    const result = util.readJSON('test.json');
+    expect(readFileSyncMock).toHaveBeenCalledWith('test.json', 'utf8');
+    expect(result).toEqual({ name: 'John', age: 30 });
+    readFileSyncMock.mockRestore();
   });
 
   

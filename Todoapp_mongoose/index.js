@@ -30,7 +30,8 @@ app.route("/").get(async (req, res) => {
   }
 }).post(async (req, res) => {
   const todoTask = new TodoTask({
-      title: req.body.title
+      title: req.body.title,
+      date: req.body.date
   });
   try {
     await todoTask.save();
@@ -76,7 +77,7 @@ app.route("/edit/:id").get(async (req, res) => {
 .post(async (req, res) => {
   const id = req.params.id;
   try {
-    await TodoTask.findByIdAndUpdate(id, { title: req.body.title })
+    await TodoTask.findByIdAndUpdate(id, { title: req.body.title, date: req.body.date})
     res.redirect("/");
   } catch (err) {
     res.send(500, err);

@@ -37,3 +37,5 @@ app.post('/add', async function(req, resp) {
     const query = { title : req.body.title, date : req.body.date }
     util.create(URI, DATABASE, COLLECTION, query);
 }); 
+
+module.exports = app;
