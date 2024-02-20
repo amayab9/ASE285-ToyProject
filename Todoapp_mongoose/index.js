@@ -30,8 +30,7 @@ app.route("/").get(async (req, res) => {
   }
 }).post(async (req, res) => {
   const todoTask = new TodoTask({
-      title: req.body.title,
-      date: req.body.date
+      title: req.body.title
   });
   try {
     await todoTask.save();
@@ -77,7 +76,7 @@ app.route("/edit/:id").get(async (req, res) => {
 .post(async (req, res) => {
   const id = req.params.id;
   try {
-    await TodoTask.findByIdAndUpdate(id, { title: req.body.title, date: req.body.date})
+    await TodoTask.findByIdAndUpdate(id, { title: req.body.title })
     res.redirect("/");
   } catch (err) {
     res.send(500, err);
@@ -90,6 +89,16 @@ app.route("/remove/:id").get(async (req, res) => {
   try {
     await TodoTask.findByIdAndRemove(id)
     res.redirect("/");
+  } catch (err) {
+    res.send(500, err);
+  }
+});
+
+//JSON
+app.route("/json").get(async (req, res) => {
+  try {
+    const tasks = await TodoTask.find({});
+    res.json(tasks);
   } catch (err) {
     res.send(500, err);
   }

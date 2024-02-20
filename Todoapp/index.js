@@ -37,6 +37,7 @@ app.get('/', async function(req, resp) {
       await resp.render('write.ejs')
   } catch (e) {
       console.error(e);
+      resp.redirect('views/error.ejs')
   } 
 });
   
@@ -45,6 +46,7 @@ app.get('/', async function(req, resp) {
     await postapp.runAddPost(req, resp);
   } catch (e) {
     console.error(e);
+    resp.redirect('views/error.ejs')
   } 
 });
   
@@ -53,6 +55,7 @@ app.get('/list', async function(req, resp){
     await postapp.runListGet(req, resp);
   } catch (e) {
     console.error(e);
+    resp.redirect('views/error.ejs')
   }   
 });
   
@@ -61,6 +64,7 @@ app.delete('/delete', async function(req, resp){
     await postapp.runDeleteDelete(req, resp); 
   } catch (e) {
     console.error(e);
+    resp.redirect('views/error.ejs')
   }     
 }); 
 
@@ -69,6 +73,7 @@ app.get('/detail/:id', async function (req, resp) {
     await postapp.runDetailIdGet(req, resp); 
   } catch (e) {
     console.error(e);
+    resp.redirect('views/error.ejs')
   }    
 });
 
@@ -77,6 +82,7 @@ app.get('/edit/:id', async function (req, resp) {
     await postapp.runEditIdGet(req, resp); 
   } catch (e) {
     console.error(e);
+    resp.redirect('views/error.ejs')
   }    
 });
 
@@ -85,5 +91,16 @@ app.put('/edit', async function (req, resp) {
     await postapp.runEditPut(req, resp); 
   } catch (e) {
     console.error(e);
+    resp.redirect('views/error.ejs')
   }     
 }); 
+
+app.get('/json', async function(req, resp) {
+  try {
+    const jsonObjs = await postapp.runGetPost();
+    resp.json(jsonObjs);
+  } catch (e) {
+    console.error(e);
+    resp.redirect('views/error.ejs')
+  }
+});

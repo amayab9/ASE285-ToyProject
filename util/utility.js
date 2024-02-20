@@ -7,35 +7,48 @@ class TodoApp {
     this.posts = posts
     this.counter = counter
   }
-  /*
-    Warning: this code has a bug
-    Read runDeleteDelete comment.
-  */
+  
   async runAddPost(req, resp) {
     try {
-      let query = {name : 'Total Post'};
-      let res = await util.read(this.uri, this.database, this.counter, query)
+      let query = { name: 'Total Post' };
+      let res = await util.read(this.uri, this.database, this.counter, query);
       let totalPost = 0;
       if (res.length != 0) {
         totalPost = res[0].totalPost;
         console.log(res);
       } else {
-        query = { name : 'Total Post', totalPost : 0};
+        query = { name: 'Total Post', totalPost: 0 };
         await util.create(this.uri, this.database, this.counter, query);
       }
-
-      query = { _id : totalPost + 1, title : req.body.title, date : req.body.date};
+  
+      query = { name: 'Latest Post ID' };
+      res = await util.read(this.uri, this.database, this.counter, query);
+      let latestIdNumber = 0;
+      if (res.length != 0) {
+        latestIdNumber = res[0].latestIdNumber;
+      } else {
+        query = { name: 'Latest Post ID', latestIdNumber: 0 };
+        await util.create(this.uri, this.database, this.counter, query);
+      }
+  
+      query = { _id: latestIdNumber + 1, title: req.body.title, date: req.body.date };
       res = await util.create(this.uri, this.database, this.posts, query);
-      
-      query = {name : 'Total Post'};
-      const stage = {$inc: {totalPost: 1}}
+  
+      query = { name: 'Total Post' };
+      const stage = { $inc: { totalPost: 1 } };
       await util.update(this.uri, this.database, this.counter, query, stage);
+  
+      // Increment latestIdNumber when adding a new post
+      const incrementLatestId = { $inc: { latestIdNumber: 1 } };
+      await util.update(this.uri, this.database, this.counter, { name: 'Latest Post ID' }, incrementLatestId);
+  
       this.runListGet(req, resp);
     } catch (e) {
       console.error(e);
-      resp.status(500).send({ error: `Error from runAddPost: ${e.message}` })
+      resp.status(500).send({ error: `Error from runAddPost: ${e.message}` });
     }
   }
+    
   async runListGet(req, resp) {
       try {
         let res = await util.read(this.uri, this.database, this.posts, {}) // {} query returns all documents
@@ -50,34 +63,22 @@ class TodoApp {
         resp.status(500).send({ error: `Error from runListGet: ${e.message}` })
       } 
   }
-  /*
-    Warning: this code has a bug.
   
-    When the post is deleted, totalPost is decreased by 1.
-    For example, when we have 3 posts, with id 1,2,3 and the post 1 is deleted, the posts have ids 2,3, and totalPost will be 2.
-    So, the new post will have the id 3 (totalPost + 1) and this is not OK because we have two posts with the same id.
-    The solution is to make another variable in the counter collection to keep track of the latest post.
-    In the example, the latestIdNumber will be the 4 and it is updated only by the runAddPost method, not runDeleteDelete method.
-    and use the totalPost to track the total number of the count. 
-    It is a good idea to get the real total count from the posts collection (using the API such as collection.countDocuments({})), not adding or deleting one from the totalCount. 
-  */
   async runDeleteDelete(req, resp) {
     try {
-      req.body._id = parseInt(req.body._id); // the body._id is stored in string, so change it into an int value
+      req.body._id = parseInt(req.body._id);
       console.log(req.body._id);
-      await util.delete_document(this.uri, this.database, this.posts, req.body)
-
-      const query = {name : 'Total Post'};
-      const stage = {$inc: {totalPost:-1}};
-      await util.update(this.uri, this.database, this.posts, query, stage)
-
-      resp.send('Delete complete')
-    }
-    catch (e) {
+      await util.delete_document(this.uri, this.database, this.posts, req.body);
+  
+      // Don't decrement totalPost here
+  
+      this.runListGet(req, resp);
+    } catch (e) {
       console.error(e);
-      resp.status(500).send({ error: `Error from runDeleteDelete: ${e.message}` })
-    } 
+      resp.status(500).send({ error: `Error from runDeleteDelete: ${e.message}` });
+    }
   }
+    
   
   async runEditIdGet(req, resp) {
     // DEBUG
@@ -134,6 +135,17 @@ class TodoApp {
       resp.status(500).send({ error: `Error from runDetailIdGet: ${e.message}` })
     }
   }
+
+  async runGetPost() {
+    try {
+      const posts = await util.read(this.uri, this.database, this.posts, {});
+      return posts;
+    } catch (e) {
+      resp.render('error.ejs')
+      throw e;
+    }
+  }
+  
 }
 
 module.exports.TodoApp = TodoApp;

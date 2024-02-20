@@ -45,6 +45,7 @@ app.get('/list', async function(req, resp){
 app.delete('/delete', async function(req, resp){   
   try {
     await postapp.runDeleteDelete(req, resp); 
+   // resp.redirect('/list');
   } catch (e) {
     console.error(e);
   }     
